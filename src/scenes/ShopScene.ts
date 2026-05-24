@@ -62,13 +62,14 @@ export class ShopScene extends Phaser.Scene {
     });
 
     this.creditText = this.add.text(
-      48,
-      86,
-      `WAVE ${this.equipment.wave}   CREDITS ${this.equipment.credits}   DATA CUBES ${this.equipment.dataCubes}`,
+      56,
+      100,
+      `WAVE ${this.equipment.wave}   CREDITS ${this.equipment.credits}\nDATA CUBES ${this.equipment.dataCubes}`,
       {
-        fontFamily: "Arial, sans-serif",
-        fontSize: "18px",
-        color: "#d9fbff"
+        fontFamily: "Arial Black, Arial, sans-serif",
+        fontSize: "14px",
+        color: "#b9d2dd",
+        lineSpacing: 6
       }
     );
 
@@ -76,7 +77,7 @@ export class ShopScene extends Phaser.Scene {
     this.renderOptions();
     this.renderUpgradeColumn();
 
-    this.makeButton(744, 468, 166, 46, "LAUNCH", () => {
+    this.makeButton(770, 472, 152, 42, "LAUNCH", () => {
       saveEquipment(this.equipment);
       this.scene.start("GameScene");
     });
@@ -84,15 +85,15 @@ export class ShopScene extends Phaser.Scene {
 
   private renderShipBay(): void {
     this.add
-      .rectangle(182, 290, 280, 330, 0x08111f, 0.76)
+      .rectangle(186, 322, 292, 376, 0x08111f, 0.76)
       .setStrokeStyle(2, 0x263a71, 0.8);
-    this.add.sprite(182, 246, "player").setScale(1.85);
+    this.add.sprite(186, 250, "player").setScale(1.65);
 
     const sideTexture = sidekickOptions.find((item) => item.id === this.equipment.sidekick)
       ?.texture;
     if (sideTexture) {
-      this.add.sprite(104, 295, sideTexture).setScale(1.15);
-      this.add.sprite(260, 295, sideTexture).setScale(1.15);
+      this.add.sprite(104, 314, sideTexture).setScale(1.05);
+      this.add.sprite(268, 314, sideTexture).setScale(1.05);
     }
 
     const lines = [
@@ -105,37 +106,39 @@ export class ShopScene extends Phaser.Scene {
     ];
 
     lines.forEach((line, index) => {
-      this.add.text(72, 374 + index * 22, line, {
+      this.add.text(70, 394 + index * 21, line, {
         fontFamily: "Consolas, monospace",
-        fontSize: "15px",
+        fontSize: "14px",
         color: index < 3 ? "#f2fbff" : "#9fb6cf"
       });
     });
   }
 
   private renderOptions(): void {
-    this.add.text(360, 48, "WEAPONS", {
+    this.add.text(386, 48, "WEAPONS", {
       fontFamily: "Arial Black, Arial, sans-serif",
       fontSize: "20px",
       color: "#7df9ff"
     });
 
-    this.renderOptionRow(360, 88, "FRONT", frontOptions, this.equipment.ownedFront, this.equipment.front, (id) => {
+    this.renderOptionRow(386, 78, "FRONT", frontOptions, this.equipment.ownedFront, this.equipment.front, (id) => {
       this.buyOrEquip("front", id);
     });
-    this.renderOptionRow(360, 192, "REAR", rearOptions, this.equipment.ownedRear, this.equipment.rear, (id) => {
+    this.renderOptionRow(386, 190, "REAR", rearOptions, this.equipment.ownedRear, this.equipment.rear, (id) => {
       this.buyOrEquip("rear", id);
     });
     this.renderOptionRow(
-      360,
-      296,
+      386,
+      302,
       "WINGS",
       sidekickOptions,
       this.equipment.ownedSidekicks,
       this.equipment.sidekick,
       (id) => {
         this.buyOrEquip("sidekick", id);
-      }
+      },
+      2,
+      154
     );
   }
 
@@ -146,13 +149,20 @@ export class ShopScene extends Phaser.Scene {
     options: Option<T>[],
     owned: T[],
     selected: T,
-    select: (id: T) => void
+    select: (id: T) => void,
+    columns = 3,
+    cardWidth = 100
   ): void {
     this.add.text(x, y, title, {
       fontFamily: "Arial Black, Arial, sans-serif",
       fontSize: "15px",
       color: "#9fb6cf"
     });
+
+    const gap = 10;
+    const cardHeight = columns === 2 ? 50 : 58;
+    const buttonHeight = 24;
+    const rowHeight = cardHeight + buttonHeight + 12;
 
     options.forEach((option, index) => {
       const ownedItem = owned.includes(option.id);
@@ -163,55 +173,57 @@ export class ShopScene extends Phaser.Scene {
         : ownedItem
           ? "EQUIP"
           : `$${cost}`;
-      const bx = x + index * 118;
-      const by = y + 28;
+      const col = index % columns;
+      const row = Math.floor(index / columns);
+      const bx = x + col * (cardWidth + gap);
+      const by = y + 24 + row * rowHeight;
       const enabled = active || ownedItem || this.equipment.credits >= cost;
 
       const fill = active ? 0x1d4c6b : 0x111c31;
       this.add
-        .rectangle(bx, by, 106, 62, fill, enabled ? 0.92 : 0.42)
+        .rectangle(bx, by, cardWidth, cardHeight, fill, enabled ? 0.92 : 0.42)
         .setOrigin(0, 0)
         .setStrokeStyle(2, active ? 0x7df9ff : 0x263a71, active ? 0.9 : 0.75);
 
       if (option.texture) {
-        this.add.sprite(bx + 18, by + 22, option.texture).setScale(0.72);
+        this.add.sprite(bx + 18, by + 20, option.texture).setScale(0.62);
       }
 
-      this.add.text(bx + 34, by + 11, option.label, {
+      this.add.text(bx + 34, by + 9, option.label, {
         fontFamily: "Arial, sans-serif",
-        fontSize: "12px",
+        fontSize: "11px",
         color: enabled ? "#f2fbff" : "#687b91",
-        wordWrap: { width: 66 }
+        wordWrap: { width: cardWidth - 42 }
       });
-      this.add.text(bx + 10, by + 39, option.note, {
+      this.add.text(bx + 10, by + cardHeight - 19, option.note, {
         fontFamily: "Arial, sans-serif",
         fontSize: "10px",
         color: "#9fb6cf",
-        wordWrap: { width: 88 }
+        wordWrap: { width: cardWidth - 18 }
       });
 
-      this.makeButton(bx, by + 68, 106, 26, label, () => select(option.id), enabled);
+      this.makeButton(bx, by + cardHeight + 6, cardWidth, buttonHeight, label, () => select(option.id), enabled);
     });
   }
 
   private renderUpgradeColumn(): void {
-    this.add.text(744, 48, "SYSTEMS", {
+    this.add.text(770, 48, "SYSTEMS", {
       fontFamily: "Arial Black, Arial, sans-serif",
       fontSize: "20px",
       color: "#7df9ff"
     });
 
-    this.renderUpgradeButton(744, 92, "FRONT POWER", "frontLevel", 560);
-    this.renderUpgradeButton(744, 145, "REAR POWER", "rearLevel", 460);
-    this.renderUpgradeButton(744, 198, "SHIELD GRID", "shieldLevel", 520);
-    this.renderUpgradeButton(744, 251, "ARMOR PLATE", "armorLevel", 500);
-    this.renderUpgradeButton(744, 304, "GENERATOR", "generatorLevel", 620);
+    this.renderUpgradeButton(770, 92, "FRONT POWER", "frontLevel", 560);
+    this.renderUpgradeButton(770, 145, "REAR POWER", "rearLevel", 460);
+    this.renderUpgradeButton(770, 198, "SHIELD GRID", "shieldLevel", 520);
+    this.renderUpgradeButton(770, 251, "ARMOR PLATE", "armorLevel", 500);
+    this.renderUpgradeButton(770, 304, "GENERATOR", "generatorLevel", 620);
 
-    this.makeButton(744, 382, 166, 34, "REPULSOR", () => {
+    this.makeButton(770, 382, 152, 34, "REPULSOR", () => {
       this.equipment.special = "repulsor";
       this.persistAndRefresh();
     }, this.equipment.special !== "repulsor");
-    this.makeButton(744, 422, 166, 34, "OVERDRIVE", () => {
+    this.makeButton(770, 422, 152, 34, "OVERDRIVE", () => {
       this.equipment.special = "overdrive";
       this.persistAndRefresh();
     }, this.equipment.special !== "overdrive");
@@ -228,7 +240,7 @@ export class ShopScene extends Phaser.Scene {
     const cost = baseCost * level;
     const canBuy = level < 5 && this.equipment.credits >= cost;
     const buttonLabel = level >= 5 ? `${label} MAX` : `${label} L${level + 1}  $${cost}`;
-    this.makeButton(x, y, 166, 34, buttonLabel, () => {
+    this.makeButton(x, y, 152, 34, buttonLabel, () => {
       if (!canBuy) {
         this.flashCredits();
         return;

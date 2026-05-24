@@ -298,49 +298,67 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createPremiumSprites(): void {
-    this.replaceCanvasTexture("player", 72, 88, (ctx, w, h) => {
-      drawGlow(ctx, w / 2, h * 0.72, 34, "rgba(125,249,255,0.34)");
+    this.replaceCanvasTexture("player", 86, 104, (ctx, w, h) => {
+      drawGlow(ctx, w / 2, h * 0.68, 42, "rgba(125,249,255,0.34)");
+      drawEngine(ctx, w * 0.34, h * 0.77, 7, 22, "#ffb15f");
+      drawEngine(ctx, w * 0.66, h * 0.77, 7, 22, "#ffb15f");
       drawHull(ctx, [
-        [w * 0.5, 4],
-        [w * 0.78, h * 0.58],
-        [w * 0.63, h * 0.54],
-        [w * 0.55, h * 0.82],
-        [w * 0.5, h * 0.72],
-        [w * 0.45, h * 0.82],
-        [w * 0.37, h * 0.54],
-        [w * 0.22, h * 0.58]
-      ], "#7df9ff", "#162744", "#e8fdff");
+        [w * 0.19, h * 0.58],
+        [w * 0.36, h * 0.34],
+        [w * 0.44, h * 0.68],
+        [w * 0.31, h * 0.86],
+        [w * 0.13, h * 0.76]
+      ], "#5fd8ff", "#18355c", "#d9fbff");
       drawHull(ctx, [
-        [w * 0.5, h * 0.13],
-        [w * 0.63, h * 0.55],
-        [w * 0.5, h * 0.66],
-        [w * 0.37, h * 0.55]
-      ], "#244f7d", "#07111f", "#79e8ff", 1);
-      drawEllipse(ctx, w * 0.5, h * 0.38, 18, 11, "#0a1828", "#7df9ff", 2);
-      drawGlow(ctx, w * 0.5, h * 0.38, 13, "rgba(125,249,255,0.85)");
-      drawEllipse(ctx, w * 0.5, h * 0.38, 9, 6, "#d9fbff", "#ffffff", 1);
-      drawEngine(ctx, w * 0.37, h * 0.73, 6, 15, "#ffb15f");
-      drawEngine(ctx, w * 0.63, h * 0.73, 6, 15, "#ffb15f");
+        [w * 0.81, h * 0.58],
+        [w * 0.64, h * 0.34],
+        [w * 0.56, h * 0.68],
+        [w * 0.69, h * 0.86],
+        [w * 0.87, h * 0.76]
+      ], "#5fd8ff", "#18355c", "#d9fbff");
+      drawHull(ctx, [
+        [w * 0.5, 5],
+        [w * 0.64, h * 0.48],
+        [w * 0.58, h * 0.82],
+        [w * 0.5, h * 0.94],
+        [w * 0.42, h * 0.82],
+        [w * 0.36, h * 0.48]
+      ], "#e8fdff", "#31567b", "#f2fbff");
+      drawHull(ctx, [
+        [w * 0.5, h * 0.18],
+        [w * 0.59, h * 0.55],
+        [w * 0.5, h * 0.71],
+        [w * 0.41, h * 0.55]
+      ], "#215c85", "#07111f", "#7df9ff", 0.95);
+      roundedPanel(ctx, w * 0.29, h * 0.68, 13, 18, 5, "#0f2137", "#040910", "#7df9ff");
+      roundedPanel(ctx, w * 0.56, h * 0.68, 13, 18, 5, "#0f2137", "#040910", "#7df9ff");
+      drawEllipse(ctx, w * 0.5, h * 0.39, 16, 10, "#062034", "#7df9ff", 2);
+      drawGlow(ctx, w * 0.5, h * 0.39, 11, "rgba(125,249,255,0.9)");
+      drawEllipse(ctx, w * 0.5, h * 0.39, 7, 5, "#d9fbff", "#ffffff", 1);
       drawPanelLines(ctx, w, h, "#d9fbff");
     });
 
-    this.replaceCanvasTexture("enemy-scout", 54, 54, (ctx, w, h) => {
-      drawGlow(ctx, w / 2, h / 2, 24, "rgba(255,95,122,0.28)");
+    this.replaceCanvasTexture("enemy-scout", 64, 58, (ctx, w, h) => {
+      drawGlow(ctx, w / 2, h / 2, 28, "rgba(255,95,122,0.32)");
       drawHull(ctx, [
         [w * 0.5, 5],
-        [w * 0.88, h * 0.76],
-        [w * 0.58, h * 0.64],
-        [w * 0.5, h * 0.88],
-        [w * 0.42, h * 0.64],
-        [w * 0.12, h * 0.76]
-      ], "#ff5f7a", "#421121", "#ffd0d7");
-      drawEllipse(ctx, w * 0.5, h * 0.54, 12, 9, "#0a0d14", "#ffb15f", 2);
-      drawGlow(ctx, w * 0.5, h * 0.54, 8, "rgba(255,211,106,0.75)");
+        [w * 0.72, h * 0.42],
+        [w * 0.92, h * 0.7],
+        [w * 0.61, h * 0.64],
+        [w * 0.5, h * 0.9],
+        [w * 0.39, h * 0.64],
+        [w * 0.08, h * 0.7],
+        [w * 0.28, h * 0.42]
+      ], "#ff8a9e", "#561423", "#ffd0d7");
+      roundedPanel(ctx, w * 0.27, h * 0.4, w * 0.46, h * 0.28, 9, "#202842", "#080b14", "#ff9bac");
+      drawGlow(ctx, w * 0.5, h * 0.53, 12, "rgba(255,211,106,0.75)");
+      drawEllipse(ctx, w * 0.5, h * 0.53, 7, 7, "#ffd36a", "#fff2b6", 1);
     });
 
-    this.replaceCanvasTexture("enemy-tank", 72, 64, (ctx, w, h) => {
+    this.replaceCanvasTexture("enemy-tank", 78, 68, (ctx, w, h) => {
       drawGlow(ctx, w / 2, h / 2, 31, "rgba(255,211,106,0.24)");
-      roundedPanel(ctx, 7, 10, w - 14, h - 18, 10, "#ffb15f", "#4c2410", "#fff2b6");
+      roundedPanel(ctx, 6, 9, w - 12, h - 17, 10, "#ffca77", "#4c2410", "#fff2b6");
+      roundedPanel(ctx, 14, 15, w - 28, h - 30, 7, "#2c3b56", "#0b1324", "#7df9ff");
       roundedPanel(ctx, 17, 18, 16, 28, 8, "#22344f", "#07111f", "#7df9ff");
       roundedPanel(ctx, w - 33, 18, 16, 28, 8, "#22344f", "#07111f", "#7df9ff");
       drawGlow(ctx, w * 0.32, h * 0.5, 9, "rgba(255,95,122,0.9)");
@@ -367,7 +385,7 @@ export class BootScene extends Phaser.Scene {
       ctx.stroke();
     });
 
-    this.replaceCanvasTexture("enemy-bomber", 88, 78, (ctx, w, h) => {
+    this.replaceCanvasTexture("enemy-bomber", 96, 84, (ctx, w, h) => {
       drawGlow(ctx, w / 2, h / 2, 40, "rgba(186,140,255,0.24)");
       drawHull(ctx, [
         [w * 0.5, 5],
@@ -376,7 +394,8 @@ export class BootScene extends Phaser.Scene {
         [w * 0.5, h * 0.72],
         [w * 0.27, h * 0.86],
         [w * 0.08, h * 0.48]
-      ], "#ba8cff", "#21163d", "#eadcff");
+      ], "#d1b2ff", "#251744", "#eadcff");
+      roundedPanel(ctx, w * 0.2, h * 0.43, w * 0.6, h * 0.2, 11, "#443469", "#11101f", "#bfa5ff");
       drawEllipse(ctx, w / 2, h * 0.48, 16, 12, "#261540", "#ffd36a", 2);
       drawStripes(ctx, w * 0.23, h * 0.36, w * 0.54, h * 0.26, "rgba(232,220,255,0.26)");
     });

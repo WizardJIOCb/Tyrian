@@ -210,17 +210,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.rectangle(0, 0, W, 44, 0x05070d, 0.82).setOrigin(0, 0).setDepth(50);
-    this.hpText = this.add.text(16, 13, "", hudStyle("#ffccd4")).setDepth(51);
-    this.shieldText = this.add.text(156, 13, "", hudStyle("#d9fbff")).setDepth(51);
-    this.energyText = this.add.text(322, 13, "", hudStyle("#fff2b6")).setDepth(51);
-    this.scoreText = this.add.text(512, 13, "", hudStyle("#d9ffef")).setDepth(51);
-    this.waveText = this.add.text(756, 13, "", hudStyle("#f2fbff")).setDepth(51);
+    this.add.rectangle(0, 0, W, 42, 0x05070d, 0.9).setOrigin(0, 0).setDepth(50);
+    this.add.rectangle(0, H - 34, W, 34, 0x05070d, 0.72).setOrigin(0, 0).setDepth(50);
+    this.hpText = this.add.text(16, 12, "", hudStyle("#ffccd4")).setDepth(51);
+    this.shieldText = this.add.text(154, 12, "", hudStyle("#d9fbff")).setDepth(51);
+    this.energyText = this.add.text(310, 12, "", hudStyle("#fff2b6")).setDepth(51);
+    this.scoreText = this.add.text(520, 12, "", hudStyle("#d9ffef")).setDepth(51);
+    this.waveText = this.add.text(772, 12, "", hudStyle("#f2fbff")).setDepth(51);
 
-    this.add.text(16, H - 25, "MOVE WASD/ARROWS   FIRE SPACE   SPECIAL E/SHIFT   ESC HANGAR", {
+    this.add.text(18, H - 23, "MOVE WASD/ARROWS     FIRE SPACE     SPECIAL E/SHIFT     ESC HANGAR", {
       fontFamily: "Arial, sans-serif",
       fontSize: "12px",
-      color: "#687b91"
+      color: "#8da1b8"
     }).setDepth(51);
   }
 
