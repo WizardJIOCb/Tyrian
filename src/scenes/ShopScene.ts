@@ -85,15 +85,15 @@ export class ShopScene extends Phaser.Scene {
 
   private renderShipBay(): void {
     this.add
-      .rectangle(186, 322, 292, 376, 0x08111f, 0.76)
+      .rectangle(186, 334, 292, 352, 0x08111f, 0.76)
       .setStrokeStyle(2, 0x263a71, 0.8);
-    this.add.sprite(186, 250, "player").setScale(1.65);
+    this.add.sprite(186, 256, "player").setScale(1.52);
 
     const sideTexture = sidekickOptions.find((item) => item.id === this.equipment.sidekick)
       ?.texture;
     if (sideTexture) {
-      this.add.sprite(104, 314, sideTexture).setScale(1.05);
-      this.add.sprite(268, 314, sideTexture).setScale(1.05);
+      this.add.sprite(108, 316, sideTexture).setScale(0.96);
+      this.add.sprite(264, 316, sideTexture).setScale(0.96);
     }
 
     const lines = [
@@ -106,11 +106,11 @@ export class ShopScene extends Phaser.Scene {
     ];
 
     lines.forEach((line, index) => {
-      this.add.text(70, 394 + index * 21, line, {
+      this.addFittedText(70, 386 + index * 18, line, 236, 16, {
         fontFamily: "Consolas, monospace",
-        fontSize: "14px",
+        fontSize: "13px",
         color: index < 3 ? "#f2fbff" : "#9fb6cf"
-      });
+      }, 10);
     });
   }
 
@@ -189,18 +189,18 @@ export class ShopScene extends Phaser.Scene {
         this.add.sprite(bx + 18, by + 20, option.texture).setScale(0.62);
       }
 
-      this.add.text(bx + 34, by + 9, option.label, {
+      this.addFittedText(bx + 34, by + 8, option.label, cardWidth - 42, 28, {
         fontFamily: "Arial, sans-serif",
         fontSize: "11px",
         color: enabled ? "#f2fbff" : "#687b91",
         wordWrap: { width: cardWidth - 42 }
-      });
-      this.add.text(bx + 10, by + cardHeight - 19, option.note, {
+      }, 8);
+      this.addFittedText(bx + 10, by + cardHeight - 18, option.note, cardWidth - 18, 14, {
         fontFamily: "Arial, sans-serif",
         fontSize: "10px",
         color: "#9fb6cf",
         wordWrap: { width: cardWidth - 18 }
-      });
+      }, 8);
 
       this.makeButton(bx, by + cardHeight + 6, cardWidth, buttonHeight, label, () => select(option.id), enabled);
     });
@@ -239,8 +239,9 @@ export class ShopScene extends Phaser.Scene {
     const level = this.equipment[key];
     const cost = baseCost * level;
     const canBuy = level < 5 && this.equipment.credits >= cost;
-    const buttonLabel = level >= 5 ? `${label} MAX` : `${label} L${level + 1}  $${cost}`;
-    this.makeButton(x, y, 152, 34, buttonLabel, () => {
+    const name = level >= 5 ? label : `${label} L${level + 1}`;
+    const price = level >= 5 ? "MAX" : `$${cost}`;
+    this.makeSplitButton(x, y, 152, 34, name, price, () => {
       if (!canBuy) {
         this.flashCredits();
         return;
@@ -309,11 +310,12 @@ export class ShopScene extends Phaser.Scene {
       .rectangle(x, y, width, height, enabled ? 0x13213c : 0x0b1324, enabled ? 0.94 : 0.52)
       .setOrigin(0, 0)
       .setStrokeStyle(2, enabled ? 0x7df9ff : 0x263a71, enabled ? 0.55 : 0.32);
-    const text = this.add.text(x + 12, y + Math.max(6, height / 2 - 8), label, {
+    const text = this.addFittedText(x + 10, y + 4, label, width - 20, height - 8, {
       fontFamily: "Arial Black, Arial, sans-serif",
       fontSize: height < 30 ? "10px" : "12px",
       color: enabled ? "#f2fbff" : "#687b91"
-    });
+    }, 8);
+    text.setY(y + Math.max(3, (height - text.height) / 2));
 
     if (!enabled) {
       return;
@@ -329,6 +331,75 @@ export class ShopScene extends Phaser.Scene {
       text.setColor("#f2fbff");
     });
     bg.on("pointerdown", onClick);
+  }
+
+  private makeSplitButton(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    label: string,
+    value: string,
+    onClick: () => void,
+    enabled = true
+  ): void {
+    const bg = this.add
+      .rectangle(x, y, width, height, enabled ? 0x13213c : 0x0b1324, enabled ? 0.94 : 0.52)
+      .setOrigin(0, 0)
+      .setStrokeStyle(2, enabled ? 0x7df9ff : 0x263a71, enabled ? 0.55 : 0.32);
+    const labelText = this.addFittedText(x + 10, y + 8, label, width - 58, height - 12, {
+      fontFamily: "Arial Black, Arial, sans-serif",
+      fontSize: "11px",
+      color: enabled ? "#f2fbff" : "#687b91"
+    }, 8);
+    const valueText = this.addFittedText(x + width - 48, y + 8, value, 38, height - 12, {
+      fontFamily: "Arial Black, Arial, sans-serif",
+      fontSize: "11px",
+      color: enabled ? "#f2fbff" : "#687b91",
+      align: "right"
+    }, 8);
+    valueText.setX(x + width - 10 - valueText.width);
+
+    if (!enabled) {
+      return;
+    }
+
+    bg.setInteractive({ useHandCursor: true });
+    bg.on("pointerover", () => {
+      bg.setFillStyle(0x1c365f, 0.98);
+      labelText.setColor("#ffffff");
+      valueText.setColor("#ffffff");
+    });
+    bg.on("pointerout", () => {
+      bg.setFillStyle(0x13213c, 0.94);
+      labelText.setColor("#f2fbff");
+      valueText.setColor("#f2fbff");
+    });
+    bg.on("pointerdown", onClick);
+  }
+
+  private addFittedText(
+    x: number,
+    y: number,
+    text: string,
+    width: number,
+    height: number,
+    style: Phaser.Types.GameObjects.Text.TextStyle,
+    minFontSize: number
+  ): Phaser.GameObjects.Text {
+    const object = this.add.text(x, y, text, style);
+    let fontSize = extractFontSize(style.fontSize, 12);
+
+    while ((object.width > width || object.height > height) && fontSize > minFontSize) {
+      fontSize -= 1;
+      object.setFontSize(fontSize);
+    }
+
+    if (object.width > width) {
+      object.setCrop(0, 0, width, Math.max(height, object.height));
+    }
+
+    return object;
   }
 
   private persistAndRefresh(): void {
@@ -354,4 +425,22 @@ export class ShopScene extends Phaser.Scene {
 
 function labelFor<T extends string>(options: Option<T>[], id: T): string {
   return options.find((item) => item.id === id)?.label ?? id.toUpperCase();
+}
+
+function extractFontSize(
+  value: string | number | undefined,
+  fallback: number
+): number {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return fallback;
 }
