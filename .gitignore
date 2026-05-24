@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.chrome-profile*/
+.edge-profile/
+dev-server.*.log
+dev-server.pid
+server.*.log
