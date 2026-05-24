@@ -81,6 +81,7 @@ export class GameScene extends Phaser.Scene {
     this.equipment =
       (this.registry.get("equipment") as EquipmentState | undefined) ?? loadEquipment();
     this.registry.set("equipment", this.equipment);
+    this.resetRunState();
 
     this.cameras.main.setBackgroundColor("#05070d");
     this.nebula = this.add.tileSprite(W / 2, H / 2, 1100, 700, "nebula").setAlpha(0.58);
@@ -175,6 +176,30 @@ export class GameScene extends Phaser.Scene {
       string,
       Phaser.Input.Keyboard.Key
     >;
+  }
+
+  private resetRunState(): void {
+    this.hp = 100;
+    this.maxHp = 100;
+    this.shield = 100;
+    this.maxShield = 100;
+    this.energy = 100;
+    this.maxEnergy = 100;
+    this.creditsEarned = 0;
+    this.cubesEarned = 0;
+    this.waveProgress = 0;
+    this.frontTimer = 0;
+    this.rearTimer = 0;
+    this.sideTimer = 0;
+    this.enemySpawnTimer = 0;
+    this.eliteSpawned = false;
+    this.bossSpawned = false;
+    this.bossKilled = false;
+    this.isGameOver = false;
+    this.isVictory = false;
+    this.invulnerableUntil = 0;
+    this.shieldRegenDelayUntil = 0;
+    this.sidekicks = [];
   }
 
   private createParticles(): void {
