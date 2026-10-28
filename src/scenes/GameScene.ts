@@ -28,8 +28,8 @@ type SidekickSprite = Phaser.GameObjects.Sprite & {
   offsetX: number;
 };
 
-const W = 960;
-const H = 540;
+const BASE_W = 960;
+const BASE_H = 540;
 
 export class GameScene extends Phaser.Scene {
   private equipment!: EquipmentState;
@@ -72,6 +72,8 @@ export class GameScene extends Phaser.Scene {
   private scoreText?: Phaser.GameObjects.Text;
   private waveText?: Phaser.GameObjects.Text;
   private centerText?: Phaser.GameObjects.Text;
+  private pointerTarget = new Phaser.Math.Vector2();
+  private pointerActive = false;
 
   constructor() {
     super("GameScene");
@@ -83,17 +85,20 @@ export class GameScene extends Phaser.Scene {
     this.registry.set("equipment", this.equipment);
     this.resetRunState();
 
+    const w = this.viewW;
+    const h = this.viewH;
+    this.physics.world.setBounds(0, 0, w, h);
     this.cameras.main.setBackgroundColor("#05070d");
-    this.nebula = this.add.tileSprite(W / 2, H / 2, 1100, 700, "nebula").setAlpha(0.58);
-    this.far = this.add.tileSprite(W / 2, H / 2, W, H, "stars-far");
-    this.near = this.add.tileSprite(W / 2, H / 2, W, H, "stars-near");
+    this.nebula = this.add.tileSprite(w / 2, h / 2, w + 180, h + 180, "nebula").setAlpha(0.58);
+    this.far = this.add.tileSprite(w / 2, h / 2, w, h, "stars-far");
+    this.near = this.add.tileSprite(w / 2, h / 2, w, h, "stars-near");
 
     this.playerShots = this.physics.add.group({ runChildUpdate: false });
     this.enemyShots = this.physics.add.group({ runChildUpdate: false });
     this.enemies = this.physics.add.group({ runChildUpdate: false });
     this.pickups = this.physics.add.group({ runChildUpdate: false });
 
-    this.player = this.physics.add.sprite(W / 2, H - 86, "player");
+    this.player = this.physics.add.sprite(w / 2, h - this.playerBottomOffset, "player");
     this.player.setDepth(10);
     this.physics.world.enable(this.player);
     const playerBody = this.getPlayerBody();
@@ -120,7 +125,7 @@ export class GameScene extends Phaser.Scene {
     this.createCollisions();
 
     this.centerText = this.add
-      .text(W / 2, 88, `WAVE ${this.equipment.wave}`, {
+      .text(w / 2, this.isPortraitLayout ? 104 : 88, `WAVE ${this.equipment.wave}`, {
         fontFamily: "Arial Black, Arial, sans-serif",
         fontSize: "34px",
         color: "#f2fbff",
@@ -176,6 +181,35 @@ export class GameScene extends Phaser.Scene {
       string,
       Phaser.Input.Keyboard.Key
     >;
+
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      this.pointerActive = true;
+      this.pointerTarget.set(pointer.x, pointer.y);
+    });
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (pointer.isDown || this.pointerActive) {
+        this.pointerTarget.set(pointer.x, pointer.y);
+      }
+    });
+    this.input.on("pointerup", () => {
+      this.pointerActive = false;
+    });
+  }
+
+  private get viewW(): number {
+    return this.scale.width || BASE_W;
+  }
+
+  private get viewH(): number {
+    return this.scale.height || BASE_H;
+  }
+
+  private get isPortraitLayout(): boolean {
+    return this.viewH > this.viewW * 1.12;
+  }
+
+  private get playerBottomOffset(): number {
+    return this.isPortraitLayout ? 124 : 86;
   }
 
   private resetRunState(): void {
@@ -200,6 +234,8 @@ export class GameScene extends Phaser.Scene {
     this.invulnerableUntil = 0;
     this.shieldRegenDelayUntil = 0;
     this.sidekicks = [];
+    this.pointerActive = false;
+    this.pointerTarget.set(0, 0);
   }
 
   private createParticles(): void {
@@ -235,17 +271,34 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.rectangle(0, 0, W, 42, 0x05070d, 0.9).setOrigin(0, 0).setDepth(50);
-    this.add.rectangle(0, H - 34, W, 34, 0x05070d, 0.72).setOrigin(0, 0).setDepth(50);
-    this.hpText = this.add.text(16, 12, "", hudStyle("#ffccd4")).setDepth(51);
-    this.shieldText = this.add.text(154, 12, "", hudStyle("#d9fbff")).setDepth(51);
-    this.energyText = this.add.text(310, 12, "", hudStyle("#fff2b6")).setDepth(51);
-    this.scoreText = this.add.text(520, 12, "", hudStyle("#d9ffef")).setDepth(51);
-    this.waveText = this.add.text(772, 12, "", hudStyle("#f2fbff")).setDepth(51);
+    const w = this.viewW;
+    const h = this.viewH;
+    const portrait = this.isPortraitLayout;
+    const topHeight = portrait ? 74 : 42;
+    const bottomHeight = portrait ? 54 : 34;
+    const fontSize = portrait ? "11px" : "15px";
 
-    this.add.text(18, H - 23, "MOVE WASD/ARROWS     FIRE SPACE     SPECIAL E/SHIFT     ESC HANGAR", {
+    this.add.rectangle(0, 0, w, topHeight, 0x05070d, 0.9).setOrigin(0, 0).setDepth(50);
+    this.add.rectangle(0, h - bottomHeight, w, bottomHeight, 0x05070d, 0.72).setOrigin(0, 0).setDepth(50);
+
+    if (portrait) {
+      const col = w / 3;
+      this.hpText = this.add.text(12, 12, "", hudStyle("#ffccd4", fontSize)).setDepth(51);
+      this.shieldText = this.add.text(col + 4, 12, "", hudStyle("#d9fbff", fontSize)).setDepth(51);
+      this.energyText = this.add.text(col * 2 + 4, 12, "", hudStyle("#fff2b6", fontSize)).setDepth(51);
+      this.scoreText = this.add.text(12, 42, "", hudStyle("#d9ffef", fontSize)).setDepth(51);
+      this.waveText = this.add.text(col * 2 + 4, 42, "", hudStyle("#f2fbff", fontSize)).setDepth(51);
+    } else {
+      this.hpText = this.add.text(16, 12, "", hudStyle("#ffccd4", fontSize)).setDepth(51);
+      this.shieldText = this.add.text(154, 12, "", hudStyle("#d9fbff", fontSize)).setDepth(51);
+      this.energyText = this.add.text(310, 12, "", hudStyle("#fff2b6", fontSize)).setDepth(51);
+      this.scoreText = this.add.text(520, 12, "", hudStyle("#d9ffef", fontSize)).setDepth(51);
+      this.waveText = this.add.text(772, 12, "", hudStyle("#f2fbff", fontSize)).setDepth(51);
+    }
+
+    this.add.text(18, h - (portrait ? 38 : 23), portrait ? "DRAG TO MOVE   AUTO FIRE   E/SHIFT SPECIAL   ESC HANGAR" : "MOVE WASD/ARROWS     FIRE SPACE     SPECIAL E/SHIFT     ESC HANGAR", {
       fontFamily: "Arial, sans-serif",
-      fontSize: "12px",
+      fontSize: portrait ? "11px" : "12px",
       color: "#8da1b8"
     }).setDepth(51);
   }
@@ -311,7 +364,15 @@ export class GameScene extends Phaser.Scene {
     const vx = (right ? 1 : 0) - (left ? 1 : 0);
     const vy = (down ? 1 : 0) - (up ? 1 : 0);
     const vector = new Phaser.Math.Vector2(vx, vy);
-    if (vector.lengthSq() > 0) {
+    if (this.pointerActive) {
+      const targetY = Math.min(this.viewH - this.playerBottomOffset, Math.max(92, this.pointerTarget.y));
+      const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.pointerTarget.x, targetY);
+      if (distance > 10) {
+        this.physics.moveTo(this.player, this.pointerTarget.x, targetY, speed * 1.18);
+      } else {
+        body.setVelocity(0, 0);
+      }
+    } else if (vector.lengthSq() > 0) {
       vector.normalize().scale(speed);
       body.setVelocity(vector.x, vector.y);
     } else {
@@ -342,7 +403,7 @@ export class GameScene extends Phaser.Scene {
     this.rearTimer -= delta;
     this.sideTimer -= delta;
 
-    const firing = this.cursors.space.isDown || this.keys.SPACE.isDown;
+    const firing = this.cursors.space.isDown || this.keys.SPACE.isDown || this.pointerActive || this.isPortraitLayout;
     if (firing && this.frontTimer <= 0) {
       this.fireFrontWeapon();
     }
@@ -518,17 +579,17 @@ export class GameScene extends Phaser.Scene {
 
     if (!this.eliteSpawned && this.waveProgress > 42) {
       this.eliteSpawned = true;
-      this.spawnEnemy("bomber", W * 0.34);
-      this.spawnEnemy("tank", W * 0.66);
+      this.spawnEnemy("bomber", this.viewW * 0.34);
+      this.spawnEnemy("tank", this.viewW * 0.66);
     }
 
     if (!this.bossSpawned && this.waveProgress >= 100) {
       this.bossSpawned = true;
-      this.spawnEnemy("boss", W / 2);
+      this.spawnEnemy("boss", this.viewW / 2);
     }
   }
 
-  private spawnEnemy(kind: EnemyKind, x = Phaser.Math.Between(70, W - 70)): EnemySprite {
+  private spawnEnemy(kind: EnemyKind, x = Phaser.Math.Between(70, Math.max(72, this.viewW - 70))): EnemySprite {
     const texture =
       kind === "scout"
         ? "enemy-scout"
@@ -579,7 +640,7 @@ export class GameScene extends Phaser.Scene {
 
       if (enemy.kind === "boss") {
         const targetY = 102;
-        const targetX = W / 2 + Math.sin(t * 0.65) * 230;
+        const targetX = this.viewW / 2 + Math.sin(t * 0.65) * Math.min(230, this.viewW * 0.28);
         body.setVelocity((targetX - enemy.x) * 1.4, (targetY - enemy.y) * 1.2);
       } else if (enemy.kind === "scout") {
         body.setVelocity(Math.sin(t * 2.2) * 100, speed);
@@ -592,12 +653,12 @@ export class GameScene extends Phaser.Scene {
       }
 
       enemy.fireCooldown -= delta;
-      if (enemy.fireCooldown <= 0 && enemy.y > 18 && enemy.y < H - 80) {
+      if (enemy.fireCooldown <= 0 && enemy.y > 18 && enemy.y < this.viewH - 80) {
         this.enemyFire(enemy);
         enemy.fireCooldown = this.nextEnemyFireDelay(enemy);
       }
 
-      if (enemy.y > H + 90) {
+      if (enemy.y > this.viewH + 90) {
         enemy.destroy();
       }
 
@@ -651,7 +712,7 @@ export class GameScene extends Phaser.Scene {
           shot.rotation = Phaser.Math.Angle.Between(shot.x, shot.y, target.x, target.y) + Math.PI / 2;
         }
       }
-      if (shot.y < -80 || shot.y > H + 80 || shot.x < -90 || shot.x > W + 90) {
+      if (shot.y < -80 || shot.y > this.viewH + 80 || shot.x < -90 || shot.x > this.viewW + 90) {
         shot.destroy();
       }
       return true;
@@ -662,7 +723,7 @@ export class GameScene extends Phaser.Scene {
       if (!shot.active) {
         return true;
       }
-      if (shot.y < -80 || shot.y > H + 80 || shot.x < -90 || shot.x > W + 90) {
+      if (shot.y < -80 || shot.y > this.viewH + 80 || shot.x < -90 || shot.x > this.viewW + 90) {
         shot.destroy();
       }
       return true;
@@ -679,7 +740,7 @@ export class GameScene extends Phaser.Scene {
       if (distance < 110) {
         this.physics.moveToObject(pickup, this.player, 170 + (110 - distance) * 4);
       }
-      if (pickup.y > H + 40) {
+      if (pickup.y > this.viewH + 40) {
         pickup.destroy();
       }
       return true;
@@ -873,9 +934,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showEndPanel(title: string, subtitle: string): void {
-    this.add.rectangle(W / 2, H / 2, 470, 188, 0x05070d, 0.88).setDepth(80).setStrokeStyle(2, 0x7df9ff, 0.7);
+    const w = this.viewW;
+    const h = this.viewH;
+    const panelWidth = Math.min(470, w - 32);
+    this.add.rectangle(w / 2, h / 2, panelWidth, 188, 0x05070d, 0.88).setDepth(80).setStrokeStyle(2, 0x7df9ff, 0.7);
     this.add
-      .text(W / 2, H / 2 - 58, title, {
+      .text(w / 2, h / 2 - 58, title, {
         fontFamily: "Arial Black, Arial, sans-serif",
         fontSize: "34px",
         color: "#f2fbff",
@@ -885,17 +949,17 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(81);
     this.add
-      .text(W / 2, H / 2 - 8, subtitle, {
+      .text(w / 2, h / 2 - 8, subtitle, {
         fontFamily: "Arial, sans-serif",
         fontSize: "15px",
         color: "#d9fbff",
         align: "center",
-        wordWrap: { width: 410 }
+        wordWrap: { width: panelWidth - 56 }
       })
       .setOrigin(0.5)
       .setDepth(81);
     this.add
-      .text(W / 2, H / 2 + 48, "SPACE HANGAR   ENTER REPLAY", {
+      .text(w / 2, h / 2 + 48, this.isPortraitLayout ? "SPACE HANGAR   ENTER REPLAY" : "SPACE HANGAR   ENTER REPLAY", {
         fontFamily: "Arial Black, Arial, sans-serif",
         fontSize: "14px",
         color: "#fff2b6"
@@ -1070,10 +1134,10 @@ export class GameScene extends Phaser.Scene {
   }
 }
 
-function hudStyle(color: string): Phaser.Types.GameObjects.Text.TextStyle {
+function hudStyle(color: string, fontSize = "15px"): Phaser.Types.GameObjects.Text.TextStyle {
   return {
     fontFamily: "Consolas, monospace",
-    fontSize: "15px",
+    fontSize,
     color
   };
 }

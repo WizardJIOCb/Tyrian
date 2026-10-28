@@ -8,8 +8,8 @@ const config: Phaser.Types.Core.GameConfig = {
   parent: "game",
   backgroundColor: "#05070d",
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.NO_CENTER,
     width: 960,
     height: 540
   },

@@ -45,6 +45,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitFixedScene(this);
     this.equipment =
       (this.registry.get("equipment") as EquipmentState | undefined) ?? loadEquipment();
     this.registry.set("equipment", this.equipment);
@@ -443,4 +444,10 @@ function extractFontSize(
   }
 
   return fallback;
+}
+
+function fitFixedScene(scene: Phaser.Scene): void {
+  const zoom = Math.min(scene.scale.width / 960, scene.scale.height / 540);
+  scene.cameras.main.setZoom(zoom);
+  scene.cameras.main.centerOn(480, 270);
 }

@@ -10,6 +10,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitFixedScene(this);
     this.cameras.main.setBackgroundColor("#05070d");
     this.nebula = this.add.tileSprite(480, 270, 1100, 680, "nebula").setAlpha(0.72);
     this.far = this.add.tileSprite(480, 270, 960, 540, "stars-far");
@@ -114,4 +115,10 @@ export class TitleScene extends Phaser.Scene {
     });
     bg.on("pointerdown", onClick);
   }
+}
+
+function fitFixedScene(scene: Phaser.Scene): void {
+  const zoom = Math.min(scene.scale.width / 960, scene.scale.height / 540);
+  scene.cameras.main.setZoom(zoom);
+  scene.cameras.main.centerOn(480, 270);
 }
